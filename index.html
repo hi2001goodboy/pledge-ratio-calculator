@@ -5,20 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>質押維持率試算 — 證券 / 銀行 / 保險</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     color-scheme: light;
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-  }
-  /* 列印樣式 */
-  @media print {
-    .no-print { display: none !important; }
-    body { background: white !important; }
-    [data-pane] { display: block !important; margin-top: 1rem; }
-    details > div { display: block !important; }
   }
   /* 排名動畫 */
   .rank-row { transition: all .3s ease; }
@@ -59,18 +51,6 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
 <div class="max-w-6xl mx-auto px-4 py-6 md:py-8" id="captureArea">
-
-  <!-- 匯出按鈕列 -->
-  <div class="flex justify-end gap-2 mb-4 no-print">
-    <button onclick="exportPDF()" type="button"
-      class="px-4 py-2 bg-white border border-slate-300 hover:border-indigo-400 rounded-xl text-sm font-bold text-slate-700 hover:text-indigo-600 shadow-sm transition flex items-center gap-2">
-      🖨️ 列印 / 存 PDF
-    </button>
-    <button onclick="exportPNG()" type="button"
-      class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-sm font-bold text-white shadow-sm transition flex items-center gap-2">
-      🖼️ 下載 PNG
-    </button>
-  </div>
 
   <!-- 標題 -->
   <header class="text-center mb-6">
@@ -157,7 +137,7 @@
   </div>
 
   <!-- 分頁切換 -->
-  <div class="mt-10 flex gap-1 bg-slate-100 p-1 rounded-2xl no-print" id="tabBar">
+  <div class="mt-10 flex gap-1 bg-slate-100 p-1 rounded-2xl" id="tabBar">
     <button data-tab="ranking" type="button" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-bold transition bg-white text-slate-900 shadow-sm">🏆 即時對戰</button>
     <button data-tab="combo"   type="button" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-bold transition text-slate-500 hover:text-slate-700">🎲 組合搭配</button>
     <button data-tab="chart"   type="button" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-bold transition text-slate-500 hover:text-slate-700">📊 比較圖</button>
@@ -1172,40 +1152,6 @@
   }
   window.applyScenario = applyScenario;
 
-  // ---------- 匯出 ----------
-  function exportPDF() {
-    document.querySelectorAll('details').forEach(d => d.setAttribute('open', ''));
-    showAllPanes();
-    setTimeout(() => {
-      window.print();
-      setTimeout(restoreActiveTab, 500);
-    }, 100);
-  }
-  window.exportPDF = exportPDF;
-
-  async function exportPNG() {
-    if (typeof html2canvas !== 'function') {
-      alert('截圖元件尚未載入，請稍候再試');
-      return;
-    }
-    const target = document.getElementById('captureArea');
-    document.querySelectorAll('details').forEach(d => d.setAttribute('open', ''));
-    showAllPanes();
-    try {
-      await new Promise(r => setTimeout(r, 200));
-      const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#f8fafc', useCORS: true });
-      const link = document.createElement('a');
-      link.download = `質押維持率試算_${new Date().toISOString().slice(0,10)}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (e) {
-      alert('截圖失敗：' + e.message);
-    } finally {
-      restoreActiveTab();
-    }
-  }
-  window.exportPNG = exportPNG;
-
   // ---------- 分頁切換 ----------
   function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => {
@@ -1219,15 +1165,6 @@
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.addEventListener('click', () => switchTab(b.dataset.tab));
   });
-
-  // 列印 / 截圖時展開所有分頁
-  function showAllPanes() {
-    document.querySelectorAll('[data-pane]').forEach(p => p.classList.remove('hidden'));
-  }
-  function restoreActiveTab() {
-    const active = document.querySelector('.tab-btn.bg-white')?.dataset.tab || 'ranking';
-    switchTab(active);
-  }
 
   // 控制元件事件
   document.getElementById('dropSlider').addEventListener('input', e => {
