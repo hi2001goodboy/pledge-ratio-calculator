@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>質押維持率試算 — 證券 / 銀行 / 保險</title>
+<meta property="og:title" content="質押維持率試算｜證券 × 銀行 × 保險" />
+<meta property="og:description" content="三通路借貸條件、維持率與跌幅承受度即時比較試算" />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>" />
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root {
@@ -549,7 +553,7 @@
             <span id="${c.key}_netProfit" class="text-2xl font-black text-emerald-700">0.00</span>
             <span class="text-[10px] font-bold text-emerald-600">萬</span>
           </div>
-          <p class="text-[9px] text-slate-400 mt-1 italic">已按天數比例扣除利息成本</p>
+          <p class="text-[9px] text-slate-400 mt-1 italic">= 試算後淨值 − 期初擔保品 − 利息（含跌幅情境）</p>
         </div>
       </div>
     `).join('');
@@ -653,11 +657,13 @@
       // 期末擔保品 = 初始 + 報酬增值，再套用市場跌幅
       const grownCollateral = initialCollateral + assetProfit;
       const currentValue = grownCollateral * (1 - drop / 100);
-      const netProfit = assetProfit - interest;
+      // 淨損益 = 期末淨值 − 期初擔保品 − 利息（與畫面其他數字同步反映跌幅情境）
+      const netProfit = currentValue - initialCollateral - interest;
 
       let ratio = 0, status = 'safe';
       if (c.reverse) {
-        ratio = currentValue > 0 ? (totalDebt / currentValue) * 100 : 0;
+        // 擔保品歸零但仍有負債 → 最危險而非安全
+        ratio = currentValue > 0 ? (totalDebt / currentValue) * 100 : (totalDebt > 0 ? 999 : 0);
         if (ratio >= c.dangerLine) status = 'danger';
         else if (ratio >= c.warnLine) status = 'warning';
       } else {
@@ -817,10 +823,10 @@
       const assetProfit = initialCollateral * (ret / 100) * (days / 365);
       const grownCollateral = initialCollateral + assetProfit;
       const currentValue = grownCollateral * (1 - drop / 100);
-      const netProfit = assetProfit - interest;
+      const netProfit = currentValue - initialCollateral - interest;
 
       let ratio;
-      if (c.reverse) ratio = currentValue > 0 ? (totalDebt / currentValue) * 100 : 0;
+      if (c.reverse) ratio = currentValue > 0 ? (totalDebt / currentValue) * 100 : (totalDebt > 0 ? 999 : 0);
       else ratio = totalDebt > 0 ? (currentValue / totalDebt) * 100 : 0;
 
       const buffer = c.reverse ? c.dangerLine - ratio : ratio - c.dangerLine;
